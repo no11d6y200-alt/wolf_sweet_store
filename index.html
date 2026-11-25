@@ -14,7 +14,7 @@
     <!-- Framer Motion -->
     <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
     <!-- Lucide React -->
-    <script src="https://unpkg.com/lucide-react@latest"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body {
             font-family: 'Cairo', sans-serif;
@@ -47,12 +47,11 @@
         const { useState, useEffect, createElement: h } = React;
         const { motion, AnimatePresence } = window.FramerMotion || window.Motion;
         
-        // Helper to create Lucide icons safely
+        // Helper to render Lucide icons in the browser
         const Icon = (props) => {
             const { name, ...rest } = props;
-            const iconComponent = window.LucideReact && window.LucideReact[name];
-            if (!iconComponent) return h('span', null, '');
-            return h(iconComponent, rest);
+            const iconName = name.replace(/[A-Z]/g, letter => '-' + letter.toLowerCase());
+            return h('i', { 'data-lucide': iconName, ...rest });
         };
 
         // 16 Delicious Sweets Products Data
@@ -82,6 +81,12 @@
             const [searchQuery, setSearchQuery] = useState('');
             const [checkoutSuccess, setCheckoutSuccess] = useState(false);
             const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
+
+            useEffect(() => {
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    window.lucide.createIcons();
+                }
+            }, [cart, isCartOpen, selectedCategory, searchQuery, checkoutSuccess, isSocialModalOpen]);
 
             const categories = ['الكل', 'كيك', 'شرقي', 'تشيز كيك', 'ماكرون', 'شوكولاتة', 'مخبوزات'];
 
