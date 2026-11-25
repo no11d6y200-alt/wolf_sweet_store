@@ -45,7 +45,7 @@
     <script>
         // Aliases for libraries
         const { useState, useEffect, createElement: h } = React;
-        const { motion, AnimatePresence } = window.FramerMotion;
+        const { motion, AnimatePresence } = window.FramerMotion || window.Motion;
         
         // Helper to create Lucide icons safely
         const Icon = (props) => {
