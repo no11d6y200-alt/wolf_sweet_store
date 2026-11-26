@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر حكاية سكر للحلويات الفاخرة</title>
+    <meta name="description" content="اكتشفوا تشكيلة حكاية سكر من الحلويات الفاخرة، بما فيها الكيك والتشيز كيك والماكرون والحلويات الشرقية وغيرها من المذاقات الشهية، واختاروا أصنافكم المفضلة.">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Framer Motion -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <!-- Lucide React -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #fdfbf7;
+            color: #2d1810;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d4a373;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #bc6c25;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+        // Aliases for libraries
+        const { useState, useEffect, createElement: h } = React;
+        const { motion, AnimatePresence } = window.FramerMotion || window.Motion;
+        
+        // Helper to render Lucide icons in the browser
+        const Icon = (props) => {
+            const { name, ...rest } = props;
+            const iconName = name.replace(/[A-Z]/g, letter => '-' + letter.toLowerCase());
+            return h('i', { 'data-lucide': iconName, ...rest });
+        };
+
+        // 16 Delicious Sweets Products Data
+        const productsData = [
+            { id: 1, name: 'كيك الشوكولاتة الفاخر', price: 120, category: 'كيك', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=500&q=80', desc: 'طبقات من الشوكولاتة البلجيكية الغنية مع الكريمة الفاخرة.' },
+            { id: 2, name: 'تشيز كيك التوت الأزرق', price: 95, category: 'تشيز كيك', image: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=500&q=80', desc: 'تشيز كيك كريمي ناعم مغطى بصوص التوت البري الطازج.' },
+            { id: 3, name: 'ماكرون فرانسيس مشكل', price: 75, category: 'ماكرون', image: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?auto=format&fit=crop&w=500&q=80', desc: 'تشكيلة ملونة من حبات الماكرون الفرنسي المقرمشة من الخارج والطرية من الداخل.' },
+            { id: 4, name: 'بقلاوة بالفستق الحلبي', price: 110, category: 'شرقي', image: 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=500&q=80', desc: 'رقائق العجين المقرمشة المحشوة بأجود أنواع الفستق الحلبي والسمن الفاخر.' },
+            { id: 5, name: 'تارت الفواكه الطازجة', price: 85, category: 'تارت', image: 'https://images.unsplash.com/photo-1519869325930-281384150729?auto=format&fit=crop&w=500&q=80', desc: 'قشرة تارت مقرمشة مملوءة بكريمة الكاسترد ومزينة بالفواكه الموسمية.' },
+            { id: 6, name: 'كنافة بالجبنة النابلسية', price: 90, category: 'شرقي', image: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?auto=format&fit=crop&w=500&q=80', desc: 'كنافة ذهبية مقرمشة مع الجبنة المطاطية والقطر المعطر بماء الزهر.' },
+            { id: 7, name: 'كرواسون الشوكولاتة الداكنة', price: 35, category: 'مخبوزات', image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=500&q=80', desc: 'مخبوز فرنسي طازج ومقرمش محشو بأجود شوكولاتة.' },
+            { id: 8, name: 'ترافل الشوكولاتة الداكنة', price: 60, category: 'شوكولاتة', image: 'https://images.unsplash.com/photo-1548907040-4baa42d10919?auto=format&fit=crop&w=500&q=80', desc: 'كرات شوكولاتة غنية مغطاة بالكاكاو الفاخر.' },
+            { id: 9, name: 'كب كيك الفانيليا والزبدة', price: 45, category: 'كيك', image: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=500&q=80', desc: 'كب كيك إسفنجي هش مع كريمة الفانيليا الكريمية.' },
+            { id: 10, name: 'كوكيز الشوكولاتة الأمريكية', price: 40, category: 'كوكيز', image: 'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=500&q=80', desc: 'كوكيز طري ودافيء مع قطع شوكولاتة تشيبس الذائبة.' },
+            { id: 11, name: 'بان كيك بالسيبر وميبل', price: 70, category: 'فطور حلو', image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=500&q=80', desc: 'بان كيك هش يقدم مع العسل وزبدة الفانيليا.' },
+            { id: 12, name: 'آيس كريم الفانيليا والتوت', price: 50, category: 'مثلجات', image: 'https://images.unsplash.com/photo-1501443762994-82bd5dace89a?auto=format&fit=crop&w=500&q=80', desc: 'آيس كريم كريمي غني بنكهة الفانيليا الطبيعية والتوت.' },
+            { id: 13, name: 'كيكة العسل الروسية (مدوفيك)', price: 110, category: 'كيك', image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=500&q=80', desc: 'طبقات رقيقة من العسل والقشطة الغنية.' },
+            { id: 14, name: 'براونيز الشوكولاتة والجوز', price: 65, category: 'شوكولاتة', image: 'https://images.unsplash.com/photo-1582293041000-4cb5030f40d1?auto=format&fit=crop&w=500&q=80', desc: 'براونيز غني بالشوكولاتة المقرمشة من الخارج والطرية من الداخل مع الجوز.' },
+            { id: 15, name: 'دونات الكراميل المملح', price: 30, category: 'مخبوزات', image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=500&q=80', desc: 'دونات طرية مغطاة بصوص الكراميل المملح المقرمش.' },
+            { id: 16, name: 'أم علي بالقشطة والمكسرات', price: 80, category: 'شرقي', image: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?auto=format&fit=crop&w=500&q=80', desc: 'حلوى شرقية تقليدية ساخنة مغمورة بالحليب الساخن والمكسرات.' }
+        ];
+
+        function App() {
+            const [cart, setCart] = useState([]);
+            const [isCartOpen, setIsCartOpen] = useState(false);
+            const [selectedCategory, setSelectedCategory] = useState('الكل');
+            const [searchQuery, setSearchQuery] = useState('');
+            const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+            const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
+
+            useEffect(() => {
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    window.lucide.createIcons();
+                }
+            }, [cart, isCartOpen, selectedCategory, searchQuery, checkoutSuccess, isSocialModalOpen]);
+
+            const categories = ['الكل', 'كيك', 'شرقي', 'تشيز كيك', 'ماكرون', 'شوكولاتة', 'مخبوزات'];
+
+            const filteredProducts = productsData.filter(product => {
+                const matchesCategory = selectedCategory === 'الكل' || product.category === selectedCategory;
+                const matchesSearch = product.name.includes(searchQuery) || product.desc.includes(searchQuery);
+                return matchesCategory && matchesSearch;
+            });
+
+            const addToCart = (product) => {
+                setCart(prev => {
+                    const existing = prev.find(item => item.id === product.id);
+                    if (existing) {
+                        return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
+                    }
+                    return [...prev, { ...product, qty: 1 }];
+                });
+                setIsCartOpen(true);
+            };
+
+            const updateQty = (id, delta) => {
+                setCart(prev => prev.map(item => {
+                    if (item.id === id) {
+                        const newQty = item.qty + delta;
+                        return newQty > 0 ? { ...item, qty: newQty } : null;
+                    }
+                    return item;
+                }).filter(Boolean));
+            };
+
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+            const handleCheckout = () => {
+                if (cart.length === 0) return;
+                
+                // Format the WhatsApp message
+                let message = "مرحباً، أريد إتمام الطلب التالي من متجر حكاية سكر:\n\n";
+                cart.forEach((item, index) => {
+                    message += `${index + 1}. ${item.name} - الكمية: ${item.qty} - السعر: ${item.price * item.qty} ر.س\n`;
+                });
+                message += `\nالإجمالي الكلي: ${totalPrice} ر.س`;
+
+                // Encode message for URL
+                const encodedMessage = encodeURIComponent(message);
+                const whatsappUrl = `https://wa.me/201156021589?text=${encodedMessage}`;
+
+                // Open WhatsApp
+                window.open(whatsappUrl, '_blank');
+
+                setCheckoutSuccess(true);
+                setCart([]);
+                setTimeout(() => {
+                    setCheckoutSuccess(false);
+                    setIsCartOpen(false);
+                }, 3000);
+            };
+
+            return h('div', { className: 'min-h-screen flex flex-col bg-[#fdfbf7]' }, [
+                // Navbar
+                h('header', { key: 'header', className: 'sticky top-0 z-40 bg-white/90 backdrop-blur-md shadow-sm border-b border-amber-100' }, [
+                    h('div', { className: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between' }, [
+                        // Logo
+                        h('div', { className: 'flex items-center gap-3 cursor-pointer', onClick: () => setSelectedCategory('الكل') }, [
+                            h('div', { className: 'w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center text-white shadow-lg' }, [
+                                h(Icon, { name: 'Cake', size: 24 })
+                            ]),
+                            h('div', null, [
+                                h('h1', { className: 'text-2xl font-black text-amber-900 tracking-wider' }, 'حكاية سكر'),
+                                h('p', { className: 'text-xs text-amber-700 font-medium' }, 'للحلويات الفاخرة')
+                            ])
+                        ]),
+
+                        // Search Bar
+                        h('div', { className: 'hidden md:flex items-center relative w-96' }, [
+                            h('input', {
+                                type: 'text',
+                                placeholder: 'ابحث عن حلوياتك المفضلة...',
+                                value: searchQuery,
+                                onChange: (e) => setSearchQuery(e.target.value),
+                                className: 'w-full bg-amber-50/50 border border-amber-200 rounded-full py-2.5 pr-10 pl-4 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500'
+                            }),
+                            h('div', { className: 'absolute right-3 text-amber-500' }, [
+                                h(Icon, { name: 'Search', size: 18 })
+                            ])
+                        ]),
+
+                        // Actions (Cart & Social)
+                        h('div', { className: 'flex items-center gap-3' }, [
+                            // Social Button added here
+                            h('button', {
+                                onClick: () => setIsSocialModalOpen(true),
+                                className: 'bg-amber-100 hover:bg-amber-200 text-amber-900 px-4 py-2.5 rounded-full flex items-center gap-2 shadow-sm transition-all font-bold text-sm'
+                            }, [
+                                h(Icon, { name: 'Share2', size: 18 }),
+                                h('span', { className: 'hidden sm:inline' }, 'مواقع التواصل')
+                            ]),
+
+                            // Cart Button
+                            h('button', {
+                                onClick: () => setIsCartOpen(true),
+                                className: 'relative bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-full flex items-center gap-2 shadow-md transition-all'
+                            }, [
+                                h(Icon, { name: 'ShoppingBag', size: 18 }),
+                                h('span', { className: 'font-bold' }, 'السلة'),
+                                cart.length > 0 && h('span', { className: 'absolute -top-2 -right-2 bg-rose-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center font-bold shadow' }, cart.reduce((a, c) => a + c.qty, 0))
+                            ])
+                        ])
+                    ])
+                ]),
+
+                // Hero Section
+                h('section', { key: 'hero', className: 'relative bg-gradient-to-r from-amber-900 to-amber-950 text-white py-16 px-4 overflow-hidden' }, [
+                    h('div', { className: 'max-w-7xl mx-auto grid md:grid-cols-2 gap-8 items-center relative z-10' }, [
+                        h('div', { className: 'space-y-6 text-center md:text-right' }, [
+                            h('span', { className: 'bg-amber-800/80 text-amber-200 text-xs px-3 py-1.5 rounded-full font-semibold' }, '✨ طازج ولذيذ كل يوم'),
+                            h('h2', { className: 'text-4xl sm:text-5xl font-black leading-tight' }, 'تلذذ بأجود أشكال الحلويات الشرقية والغربية'),
+                            h('p', { className: 'text-amber-100 text-base sm:text-lg font-light' }, 'مجموعة مختارة بعناية من 16 صنفاً فاخراً لتناسب أوقاتكم السعيدة ومناسباتكم الخاصة.'),
+                            h('button', {
+                                onClick: () => {
+                                    const el = document.getElementById('products-section');
+                                    if(el) el.scrollIntoView({ behavior: 'smooth' });
+                                },
+                                className: 'bg-amber-500 hover:bg-amber-400 text-amber-950 font-bold px-8 py-3.5 rounded-full shadow-lg transition-all inline-flex items-center gap-2'
+                            }, [
+                                h('span', null, 'تصفح القائمة'),
+                                h(Icon, { name: 'ArrowDown', size: 18 })
+                            ])
+                        ]),
+                        h('div', { className: 'flex justify-center' }, [
+                            h('img', {
+                                src: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
+                                alt: 'حلويات فاخرة',
+                                className: 'rounded-2xl shadow-2xl w-full max-w-md object-cover h-80 border-4 border-amber-800/50'
+                            })
+                        ])
+                    ])
+                ]),
+
+                // Main Products Section
+                h('main', { key: 'main', id: 'products-section', className: 'flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full' }, [
+                    // Categories Filter
+                    h('div', { className: 'flex items-center justify-start gap-2 overflow-x-auto pb-4 mb-8' },
+                        categories.map(cat => h('button', {
+                            key: cat,
+                            onClick: () => setSelectedCategory(cat),
+                            className: `px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all shadow-sm ${selectedCategory === cat ? 'bg-amber-800 text-white shadow-md' : 'bg-white text-amber-900 border border-amber-200 hover:bg-amber-50'}`
+                        }, cat))
+                    ),
+
+                    // Products Count & Search indicator
+                    h('div', { className: 'flex justify-between items-center mb-6' }, [
+                        h('h3', { className: 'text-xl font-bold text-amber-900' }, `المنتجات المتوفرة (${filteredProducts.length})`),
+                        searchQuery && h('button', { onClick: () => setSearchQuery(''), className: 'text-xs text-rose-600 hover:underline' }, 'إلغاء البحث')
+                    ]),
+
+                    // Products Horizontal Scroll Row
+                    h('div', { 
+                        className: 'flex overflow-x-auto gap-6 pb-6 pt-2 px-2 scroll-smooth snap-x snap-mandatory',
+                        style: { scrollbarWidth: 'thin' }
+                    },
+                        filteredProducts.map(product => h(motion.div, {
+                            key: product.id,
+                            layout: true,
+                            initial: { opacity: 0, scale: 0.95 },
+                            animate: { opacity: 1, scale: 1 },
+                            exit: { opacity: 0, scale: 0.9 },
+                            transition: { duration: 0.3 },
+                            className: 'min-w-[280px] sm:min-w-[300px] max-w-[300px] snap-start bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden flex flex-col hover:shadow-xl transition-all duration-300 flex-shrink-0'
+                        }, [
+                            h('div', { className: 'relative h-48 overflow-hidden group' }, [
+                                h('img', {
+                                    src: product.image,
+                                    alt: product.name,
+                                    className: 'w-full h-full object-cover group-hover:scale-110 transition-transform duration-500'
+                                }),
+                                h('span', { className: 'absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-amber-900 text-xs font-bold px-2.5 py-1 rounded-full shadow' }, product.category)
+                            ]),
+                            h('div', { className: 'p-5 flex-1 flex flex-col justify-between' }, [
+                                h('div', null, [
+                                    h('h4', { className: 'font-bold text-lg text-amber-950 mb-1 truncate' }, product.name),
+                                    h('p', { className: 'text-gray-500 text-xs line-clamp-2 mb-4 h-8' }, product.desc)
+                                ]),
+                                h('div', { className: 'flex items-center justify-between pt-2 border-t border-amber-50' }, [
+                                    h('div', null, [
+                                        h('span', { className: 'text-lg font-black text-amber-800' }, `${product.price}`),
+                                        h('span', { className: 'text-xs text-gray-500 mr-1' }, 'ر.س')
+                                    ]),
+                                    h('button', {
+                                        onClick: () => addToCart(product),
+                                        className: 'bg-amber-100 hover:bg-amber-600 text-amber-900 hover:text-white p-2.5 rounded-xl transition-colors flex items-center justify-center'
+                                    }, [
+                                        h(Icon, { name: 'Plus', size: 18 })
+                                    ])
+                                ])
+                            ])
+                        ]))
+                    )
+                ]),
+
+                // Social Media Popup Modal
+                h(AnimatePresence, null, isSocialModalOpen && h('div', { key: 'social-modal', className: 'fixed inset-0 z-50 flex items-center justify-center p-4' }, [
+                    h(motion.div, {
+                        initial: { opacity: 0 },
+                        animate: { opacity: 1 },
+                        exit: { opacity: 0 },
+                        onClick: () => setIsSocialModalOpen(false),
+                        className: 'absolute inset-0 bg-black/50 backdrop-blur-sm'
+                    }),
+                    h(motion.div, {
+                        initial: { scale: 0.9, opacity: 0, y: 20 },
+                        animate: { scale: 1, opacity: 1, y: 0 },
+                        exit: { scale: 0.9, opacity: 0, y: 20 },
+                        className: 'relative bg-white rounded-3xl p-6 shadow-2xl max-w-sm w-full space-y-4 border border-amber-100'
+                    }, [
+                        h('div', { className: 'flex items-center justify-between border-b pb-3' }, [
+                            h('h3', { className: 'font-bold text-lg text-amber-950' }, 'تواصل معنا عبر'),
+                            h('button', {
+                                onClick: () => setIsSocialModalOpen(false),
+                                className: 'text-gray-400 hover:text-gray-600'
+                            }, [
+                                h(Icon, { name: 'X', size: 20 })
+                            ])
+                        ]),
+                        h('div', { className: 'space-y-3 py-2' }, [
+                            // Facebook Button
+                            h('a', {
+                                href: 'https://www.facebook.com/share/1EQ5WhHhSh/',
+                                target: '_blank',
+                                rel: 'noopener noreferrer',
+                                className: 'w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-3 text-base'
+                            }, [
+                                h(Icon, { name: 'Facebook', size: 20 }),
+                                h('span', null, 'فيسبوك')
+                            ]),
+                            // WhatsApp Button
+                            h('a', {
+                                href: 'https://wa.me/201156021589',
+                                target: '_blank',
+                                rel: 'noopener noreferrer',
+                                className: 'w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-3 text-base'
+                            }, [
+                                h(Icon, { name: 'MessageCircle', size: 20 }),
+                                h('span', null, 'واتساب')
+                            ])
+                        ])
+                    ])
+                ])),
+
+                // Cart Drawer Modal
+                h(AnimatePresence, null, isCartOpen && h('div', { key: 'cart-modal', className: 'fixed inset-0 z-50 overflow-hidden' }, [
+                    h(motion.div, {
+                        initial: { opacity: 0 },
+                        animate: { opacity: 1 },
+                        exit: { opacity: 0 },
+                        onClick: () => setIsCartOpen(false),
+                        className: 'absolute inset-0 bg-black/50 backdrop-blur-sm'
+                    }),
+                    h(motion.div, {
+                        initial: { x: '-100%' },
+                        animate: { x: 0 },
+                        exit: { x: '-100%' },
+                        transition: { type: 'spring', damping: 25, stiffness: 200 },
+                        className: 'absolute top-0 bottom-0 left-0 w-full max-w-md bg-white shadow-2xl flex flex-col'
+                    }, [
+                        // Cart Header
+                        h('div', { className: 'p-5 border-b border-gray-100 flex items-center justify-between bg-amber-50/50' }, [
+                            h('div', { className: 'flex items-center gap-2' }, [
+                                h(Icon, { name: 'ShoppingBag', size: 20, className: 'text-amber-800' }),
+                                h('h3', { className: 'font-bold text-lg text-amber-950' }, 'سلة المشتريات')
+                            ]),
+                            h('button', {
+                                onClick: () => setIsCartOpen(false),
+                                className: 'text-gray-400 hover:text-gray-600 p-1'
+                            }, [
+                                h(Icon, { name: 'X', size: 20 })
+                            ])
+                        ]),
+
+                        // Cart Items List
+                        h('div', { className: 'flex-1 overflow-y-auto p-5 space-y-4' },
+                            cart.length === 0 ? h('div', { className: 'text-center py-20 text-gray-400' }, [
+                                h(Icon, { name: 'ShoppingBag', size: 48, className: 'mx-auto mb-3 opacity-30' }),
+                                h('p', { className: 'text-sm' }, 'السلة فارغة حالياً')
+                            ]) : cart.map(item => h('div', { key: item.id, className: 'flex items-center gap-4 bg-amber-50/30 p-3 rounded-xl border border-amber-100' }, [
+                                h('img', { src: item.image, alt: item.name, className: 'w-16 h-16 object-cover rounded-lg' }),
+                                h('div', { className: 'flex-1' }, [
+                                    h('h5', { className: 'font-bold text-sm text-amber-950' }, item.name),
+                                    h('span', { className: 'text-xs text-amber-800 font-semibold' }, `${item.price * item.qty} ر.س`)
+                                ]),
+                                h('div', { className: 'flex items-center gap-2 bg-white px-2 py-1 rounded-lg border border-amber-200' }, [
+                                    h('button', { onClick: () => updateQty(item.id, -1), className: 'text-amber-900 hover:text-rose-600' }, '-'),
+                                    h('span', { className: 'text-xs font-bold w-4 text-center' }, item.qty),
+                                    h('button', { onClick: () => updateQty(item.id, 1), className: 'text-amber-900 hover:text-emerald-600' }, '+')
+                                ])
+                            ]))
+                        ),
+
+                        // Cart Footer
+                        cart.length > 0 && h('div', { className: 'p-5 border-t border-gray-100 bg-amber-50/50 space-y-4' }, [
+                            h('div', { className: 'flex justify-between items-center text-lg font-black text-amber-950' }, [
+                                h('span', null, 'المجموع الإجمالي:'),
+                                h('span', null, `${totalPrice} ر.س`)
+                            ]),
+                            h('button', {
+                                onClick: handleCheckout,
+                                className: 'w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2'
+                            }, [
+                                h(Icon, { name: 'MessageCircle', size: 18 }),
+                                h('span', null, 'إتمام الطلب عبر الواتساب')
+                            ])
+                        ])
+                    ])
+                ])),
+
+                // Checkout Success Toast
+                h(AnimatePresence, null, checkoutSuccess && h(motion.div, {
+                    key: 'toast',
+                    initial: { opacity: 0, y: 50, scale: 0.9 },
+                    animate: { opacity: 1, y: 0, scale: 1 },
+                    exit: { opacity: 0, y: 20, scale: 0.9 },
+                    className: 'fixed bottom-6 right-6 z-50 bg-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3'
+                }, [
+                    h(Icon, { name: 'CheckCircle', size: 24 }),
+                    h('div', null, [
+                        h('h5', { className: 'font-bold text-sm' }, 'جاري تحويل طلبك إلى واتساب!'),
+                        h('p', { className: 'text-xs text-emerald-100' }, 'شكراً لتسوقك معنا في حكاية سكر.')
+                    ])
+                ])),
+
+                // Footer
+                h('footer', { key: 'footer', className: 'bg-amber-950 text-amber-100 py-8 border-t border-amber-900' }, [
+                    h('div', { className: 'max-w-7xl mx-auto px-4 text-center space-y-3' }, [
+                        h('h4', { className: 'text-lg font-bold text-white' }, 'متجر حكاية سكر للحلويات'),
+                        h('p', { className: 'text-xs text-amber-300' }, 'جميع الحقوق محفوظة © 2023 | نغرز السعادة في كل قضمة'),
+                    ])
+                ])
+            ]);
+        }
+
+        // Mount React App correctly using createRoot
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(h(App));
+    </script>
+</body>
+</html>
